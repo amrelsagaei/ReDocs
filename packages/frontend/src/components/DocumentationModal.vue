@@ -5,8 +5,6 @@ import Button from "primevue/button";
 import Card from "primevue/card";
 import TabView from "primevue/tabview";
 import TabPanel from "primevue/tabpanel";
-import { useSDK } from "@/plugins/sdk";
-
 const props = defineProps<{
   visible: boolean;
 }>();
@@ -14,8 +12,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   "update:visible": [value: boolean];
 }>();
-
-const sdk = useSDK();
 
 const dialogVisible = computed({
   get: () => props.visible,

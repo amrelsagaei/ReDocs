@@ -73,11 +73,9 @@ const processFile = async (file: File) => {
 
   try {
     
-    if (sdk.ui && sdk.ui.showToast) {
-      sdk.ui.showToast({
-        variant: "info",
-        title: "Processing File",
-        body: `Analyzing ${file.name}...`,
+    if (sdk.window && sdk.window.showToast) {
+      sdk.window.showToast(`Processing File: Analyzing ${file.name}...`, {
+        variant: "info"
       });
     }
 
@@ -164,8 +162,11 @@ const onDrop = (event: DragEvent) => {
 
   const files = event.dataTransfer?.files;
   if (files && files.length > 0) {
-    selectedFile.value = files[0];
-    processFile(files[0]);
+    const file = files[0];
+    if (file) {
+      selectedFile.value = file;
+      processFile(file);
+    }
   }
 };
 
