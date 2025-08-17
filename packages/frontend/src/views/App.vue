@@ -7,12 +7,15 @@ import { useSDK } from "@/plugins/sdk";
 import FileUploadArea from "@/components/FileUploadArea.vue";
 import DocumentationModal from "@/components/DocumentationModal.vue";
 import AuthenticationModal from "@/components/AuthenticationModal.vue";
+import RequestSelectionModal from "@/components/RequestSelectionModal.vue";
 
 const sdk = useSDK();
 
 const showDocumentation = ref(false);
+const showRequestSelection = ref(false);
 const showAuthentication = ref(false);
 const importResult = ref<any>(null);
+const selectedRequests = ref<any[]>([]);
 const isProcessing = ref(false);
 const processingStep = ref('');
 
@@ -37,7 +40,8 @@ const handleImportSuccess = (result: any) => {
     }
   }
   
-  showAuthentication.value = true;
+  // Show request selection modal first
+  showRequestSelection.value = true;
 };
 
 const handleImportError = (error: string) => {
@@ -49,21 +53,47 @@ const handleImportError = (error: string) => {
   }
 };
 
+const handleRequestsSelected = (requests: any[]) => {
+  selectedRequests.value = requests;
+  showRequestSelection.value = false;
+  
+  if (sdk.window && sdk.window.showToast) {
+    sdk.window.showToast(`${requests.length} requests selected for import.`, {
+      variant: "info"
+    });
+  }
+  
+  // Show authentication modal after request selection
+  showAuthentication.value = true;
+};
+
+const handleSelectionCancelled = () => {
+  showRequestSelection.value = false;
+  importResult.value = null;
+  selectedRequests.value = [];
+  
+  if (sdk.window && sdk.window.showToast) {
+    sdk.window.showToast("Import cancelled.", {
+      variant: "info"
+    });
+  }
+};
+
 const handleAuthConfigured = async (authConfig: any) => {
   isProcessing.value = true;
   processingStep.value = "Processing requests...";
   
   if (sdk.window && sdk.window.showToast) {
-    sdk.window.showToast("Processing " + importResult.value.sessionCount + " requests...", {
+    sdk.window.showToast("Processing " + selectedRequests.value.length + " requests...", {
       variant: "info",
       duration: 3000,
     });
   }
 
   try {
-    // Get processed requests from backend
+    // Get processed requests from backend (use selected requests)
     const result = await sdk.backend.createSessionsFromRequests(
-      importResult.value.requests,
+      selectedRequests.value,
       importResult.value.collectionName,
       authConfig
     );
@@ -110,16 +140,16 @@ const handleAuthSkipped = async (authConfig?: any) => {
   processingStep.value = "Processing requests...";
   
   if (sdk.window && sdk.window.showToast) {
-    sdk.window.showToast("Processing " + importResult.value.sessionCount + " requests...", {
+    sdk.window.showToast("Processing " + selectedRequests.value.length + " requests...", {
       variant: "info",
       duration: 3000,
     });
   }
 
   try {
-    // Get processed requests from backend
+    // Get processed requests from backend (use selected requests)
     const result = await sdk.backend.createSessionsFromRequests(
-      importResult.value.requests,
+      selectedRequests.value,
       importResult.value.collectionName,
       authConfig || { type: 'none' }
     );
@@ -344,12 +374,23 @@ const buildRawRequest = (spec: any): string => {
       @update:visible="showDocumentation = $event"
     />
 
-    <AuthenticationModal
+    <RequestSelectionModal
       v-if="importResult"
+      :visible="showRequestSelection"
+      :requests="importResult.requests || []"
+      :collection-name="importResult.collectionName || 'Unknown'"
+      :collection-type="importResult.type || 'unknown'"
+      @update:visible="showRequestSelection = $event"
+      @requests-selected="handleRequestsSelected"
+      @selection-cancelled="handleSelectionCancelled"
+    />
+
+    <AuthenticationModal
+      v-if="importResult && selectedRequests.length > 0"
       :visible="showAuthentication"
       :auth-info="importResult.authentication || { hasAuth: false, authType: 'none', description: 'No authentication detected' }"
       :collection-name="importResult.collectionName || 'Unknown'"
-      :request-count="importResult.sessionCount || 0"
+      :request-count="selectedRequests.length"
       @update:visible="showAuthentication = $event"
       @auth-configured="handleAuthConfigured"
       @auth-skipped="handleAuthSkipped"

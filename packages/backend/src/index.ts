@@ -143,8 +143,6 @@ export function init(sdk: SDK<API>) {
   // Register the replay session creation function
   sdk.api.register("createSessionsFromRequests", createSessionsFromRequests);
   
-  // Keep the legacy function for compatibility
-  sdk.api.register("generateRandomString", generateRandomString);
   
 
 }

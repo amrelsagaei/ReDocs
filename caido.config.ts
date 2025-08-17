@@ -12,7 +12,7 @@ export default defineConfig({
   id,
   name: "ReDocs",
   description: "Import Postman Collections & OpenAPI Specifications as Replay Sessions",
-  version: "1.0.0",
+  version: "1.0.1",
   author: {
     name: "Amr Elsagaei",
     email: "info@amrelsagaei.com",
@@ -21,15 +21,15 @@ export default defineConfig({
   plugins: [
     {
       kind: "backend",
-      id: "backend",
+      id: "redocs-backend",
       root: "packages/backend",
     },
     {
       kind: 'frontend',
-      id: "frontend",
+      id: "redocs-frontend",
       root: 'packages/frontend',
       backend: {
-        id: "backend",
+        id: "redocs-backend",
       },
       vite: {
         plugins: [vue()],

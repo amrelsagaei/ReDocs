@@ -398,12 +398,12 @@ const isFormValid = computed(() => {
     </div>
 
     <template #footer>
-      <div class="flex justify-between items-center px-6 py-4">
+      <div class="flex justify-between items-center px-3 py-4">
         <Button
           label="Skip Authentication"
           severity="secondary"
           @click="skipAuthentication"
-          class="flex items-center gap-2"
+          class="flex items-center"
         >
           <template #icon>
             <i class="fas fa-times"></i>
@@ -416,7 +416,7 @@ const isFormValid = computed(() => {
           label="Apply & Continue"
           :disabled="!isFormValid"
           @click="configureAuthentication"
-          class="flex items-center gap-2"
+          class="flex items-center"
         >
           <template #icon>
             <i class="fas fa-check"></i>

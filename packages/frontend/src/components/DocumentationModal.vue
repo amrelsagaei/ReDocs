@@ -115,7 +115,7 @@ components:
                     <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       1. Prepare Your File
                     </h4>
-                    <p class="text-surface-800 dark:text-white mb-3">
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
                       Export your API collection from Postman or save your OpenAPI specification as a JSON file.
                     </p>
                   </div>
@@ -124,7 +124,7 @@ components:
                     <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       2. Import to ReDocs
                     </h4>
-                    <p class="text-surface-800 dark:text-white mb-3">
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
                       Drag and drop your file onto the upload area, or click "Choose File" to browse for it.
                     </p>
                   </div>
@@ -133,7 +133,7 @@ components:
                     <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       3. Configure Authentication
                     </h4>
-                    <p class="text-surface-800 dark:text-white mb-3">
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
                       ReDocs will automatically detect authentication methods and prompt you to provide credentials.
                       You can skip this step if authentication isn't needed.
                     </p>
@@ -143,7 +143,7 @@ components:
                     <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       4. Start Testing
                     </h4>
-                    <p class="text-surface-800 dark:text-white">
+                    <p class="text-surface-800 dark:text-surface-0">
                       Navigate to the Replay section in Caido to find your imported sessions organized in collections.
                       Each API endpoint becomes a separate replay session ready for security testing.
                     </p>
@@ -165,7 +165,7 @@ components:
                     <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       Postman Collections
                     </h5>
-                    <ul class="text-sm text-surface-800 dark:text-white space-y-1">
+                    <ul class="text-sm text-surface-800 dark:text-surface-0 space-y-1">
                       <li>• Collection v2.1 format (.json)</li>
                       <li>• Environment variables support</li>
                       <li>• Pre-request scripts (limited)</li>
@@ -177,7 +177,7 @@ components:
                     <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       OpenAPI Specifications
                     </h5>
-                    <ul class="text-sm text-surface-800 dark:text-white space-y-1">
+                    <ul class="text-sm text-surface-800 dark:text-surface-0 space-y-1">
                       <li>• OpenAPI 3.x (.json only)</li>
                       <li>• Swagger 2.0 (.json only)</li>
                       <li>• Example values generation</li>
@@ -201,7 +201,7 @@ components:
                 </div>
               </template>
               <template #content>
-                <p class="text-surface-800 dark:text-white mb-4">
+                <p class="text-surface-800 dark:text-surface-0 mb-4">
                   Basic structure of a Postman Collection that ReDocs can import:
                 </p>
                 <div class="example-code bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg p-4 text-sm overflow-x-auto">
@@ -218,7 +218,7 @@ components:
                 </div>
               </template>
               <template #content>
-                <p class="text-surface-800 dark:text-white mb-4">
+                <p class="text-surface-800 dark:text-surface-0 mb-4">
                   Basic structure of an OpenAPI specification that ReDocs can import:
                 </p>
                 <div class="example-code bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg p-4 text-sm overflow-x-auto">
@@ -246,7 +246,7 @@ components:
                       <i class="fas fa-key text-primary-400"></i>
                       Bearer Token
                     </h5>
-                    <p class="text-sm text-surface-800 dark:text-white mb-2">
+                    <p class="text-sm text-surface-800 dark:text-surface-0 mb-2">
                       JWT tokens and API keys sent in Authorization header.
                     </p>
                     <code class="text-xs bg-surface-100 dark:bg-surface-800 p-2 rounded block">
@@ -259,7 +259,7 @@ components:
                       <i class="fas fa-user-lock text-primary-400"></i>
                       Basic Authentication
                     </h5>
-                    <p class="text-sm text-surface-800 dark:text-white mb-2">
+                    <p class="text-sm text-surface-800 dark:text-surface-0 mb-2">
                       Username and password encoded in Authorization header.
                     </p>
                     <code class="text-xs bg-surface-100 dark:bg-surface-800 p-2 rounded block">
@@ -272,7 +272,7 @@ components:
                       <i class="fas fa-cookie-bite text-primary-400"></i>
                       Cookie Authentication
                     </h5>
-                    <p class="text-sm text-surface-800 dark:text-white mb-2">
+                    <p class="text-sm text-surface-800 dark:text-surface-0 mb-2">
                       Session cookies and authentication tokens.
                     </p>
                     <code class="text-xs bg-surface-100 dark:bg-surface-800 p-2 rounded block">
@@ -285,7 +285,7 @@ components:
                       <i class="fas fa-cog text-primary-400"></i>
                       Custom Headers
                     </h5>
-                    <p class="text-sm text-surface-800 dark:text-white mb-2">
+                    <p class="text-sm text-surface-800 dark:text-surface-0 mb-2">
                       API keys in custom headers like X-API-Key.
                     </p>
                     <code class="text-xs bg-surface-100 dark:bg-surface-800 p-2 rounded block">
@@ -314,7 +314,7 @@ components:
                     <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       File format not recognized
                     </h5>
-                    <p class="text-surface-800 dark:text-white text-sm">
+                    <p class="text-surface-800 dark:text-surface-0 text-sm">
                       Ensure your file is a valid Postman Collection (.json) or OpenAPI specification (.json only).
                       Check that the file contains the required schema information.
                     </p>
@@ -324,7 +324,7 @@ components:
                     <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       Large files taking too long
                     </h5>
-                    <p class="text-surface-800 dark:text-white text-sm">
+                    <p class="text-surface-800 dark:text-surface-0 text-sm">
                       Files larger than 10MB may take longer to process. Consider splitting large collections 
                       into smaller chunks for better performance.
                     </p>
@@ -334,7 +334,7 @@ components:
                     <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       Sessions not appearing in Replay
                     </h5>
-                    <p class="text-surface-800 dark:text-white text-sm">
+                    <p class="text-surface-800 dark:text-surface-0 text-sm">
                       Check the Replay section in Caido and look for a collection named after your imported file.
                       Refresh the page if sessions don't appear immediately.
                     </p>
@@ -344,7 +344,7 @@ components:
                     <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       Authentication not working
                     </h5>
-                    <p class="text-surface-800 dark:text-white text-sm">
+                    <p class="text-surface-800 dark:text-surface-0 text-sm">
                       Verify that your authentication credentials are correct and haven't expired.
                       Some APIs may require additional headers or specific token formats.
                     </p>
