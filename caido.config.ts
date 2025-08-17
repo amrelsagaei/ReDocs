@@ -21,15 +21,15 @@ export default defineConfig({
   plugins: [
     {
       kind: "backend",
-      id: "backend",
+      id: "redocs-backend",
       root: "packages/backend",
     },
     {
       kind: 'frontend',
-      id: "frontend",
+      id: "redocs-frontend",
       root: 'packages/frontend',
       backend: {
-        id: "backend",
+        id: "redocs-backend",
       },
       vite: {
         plugins: [vue()],
