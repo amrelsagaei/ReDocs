@@ -141,6 +141,10 @@ export function init(sdk: SDK<API>) {
   sdk.api.register("processImportFile", processImportFile);
   
   // Register the replay session creation function
-  sdk.api.register("createSessionsFromRequests", createSessionsFromRequests); 
+  sdk.api.register("createSessionsFromRequests", createSessionsFromRequests);
+  
+  // Keep the legacy function for compatibility
+  sdk.api.register("generateRandomString", generateRandomString);
+  
 
 }
