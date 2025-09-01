@@ -1,10 +1,11 @@
 import type { SDK } from "caido:plugin";
+import { isPostmanEnvironment } from "../parsers/environment.js";
 
 /**
  * File type detection result
  */
 export interface FileTypeResult {
-  type: 'postman' | 'openapi' | 'unknown';
+  type: 'postman' | 'openapi' | 'environment' | 'unknown';
   confidence: number; // 0-1 confidence score
   details: string;
 }
@@ -39,6 +40,16 @@ export function detectFileType(
         type: 'openapi',
         confidence: 0.95,
         details: `OpenAPI specification detected - version: ${version}`
+      };
+    }
+
+    const isEnvFile = isPostmanEnvironment(content, fileName);
+    
+    if (isEnvFile) {
+      return {
+        type: 'environment',
+        confidence: 0.95,
+        details: `Postman environment detected - name: "${data.name}"`
       };
     }
 
@@ -146,12 +157,27 @@ function isOpenAPISpec(data: any): boolean {
  * @param fileName - Original file name
  * @returns Detected file type or 'unknown'
  */
-function detectFromFilename(fileName: string): 'postman' | 'openapi' | 'unknown' {
+function detectFromFilename(fileName: string): 'postman' | 'openapi' | 'environment' | 'unknown' {
   const lowerName = fileName.toLowerCase();
+
+  // Postman environment patterns
+  const environmentPatterns = [
+    'environment',
+    'env',
+    '.postman_environment.',
+    '_environment.',
+    'postman_env'
+  ];
+
+  for (const pattern of environmentPatterns) {
+    if (lowerName.includes(pattern)) {
+      return 'environment';
+    }
+  }
 
   // Postman collection patterns
   const postmanPatterns = [
-    'postman',
+    'postman_collection',
     'collection',
     'newman',
     '.postman_collection.',
@@ -233,7 +259,7 @@ function isLikelyYAML(content: string, fileName: string): boolean {
  * @returns Validation result with support info
  */
 export function validateFileTypeSupport(
-  fileType: 'postman' | 'openapi' | 'unknown',
+  fileType: 'postman' | 'openapi' | 'environment' | 'unknown',
   fileName: string
 ): {
   supported: boolean;
@@ -250,7 +276,7 @@ export function validateFileTypeSupport(
       const isYaml = fileName.toLowerCase().endsWith('.yaml') || fileName.toLowerCase().endsWith('.yml');
       if (isYaml) {
         return {
-          supported: false, // For Phase 2, YAML is not yet supported
+          supported: false,
           message: 'YAML OpenAPI specifications will be supported in a future update. Please convert to JSON format.'
         };
       }
@@ -259,11 +285,17 @@ export function validateFileTypeSupport(
         message: 'JSON OpenAPI specifications are fully supported'
       };
 
+    case 'environment':
+      return {
+        supported: true,
+        message: 'Postman environment files are fully supported'
+      };
+
     case 'unknown':
     default:
       return {
         supported: false,
-        message: 'File format not recognized. Please ensure you are uploading a valid Postman collection (.json) or OpenAPI specification (.json, .yaml, .yml)'
+        message: 'File format not recognized. Please ensure you are uploading a valid Postman collection, OpenAPI specification, or Postman environment (.json)'
       };
   }
 }

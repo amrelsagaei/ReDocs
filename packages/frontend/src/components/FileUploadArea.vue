@@ -3,7 +3,7 @@ import { ref, computed } from "vue";
 import FileUpload from "primevue/fileupload";
 import Message from "primevue/message";
 
-import { useSDK } from "@/plugins/sdk";
+import { useSDK } from "../plugins/sdk";
 
 // Component props and events
 const props = defineProps<{
@@ -11,7 +11,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  'import-success': [result: any];
+  'import-success': [result: any, fileContent?: string, fileName?: string];
   'import-error': [error: string];
 }>();
 
@@ -28,7 +28,8 @@ const selectedFile = ref<File | null>(null);
 const isDragOver = computed(() => dragOverCount.value > 0);
 const supportedFormats = computed(() => [
   "Postman Collection (.json)",
-  "OpenAPI Specification (.json only)"
+  "OpenAPI Specification (.json only)",
+  "Postman Environment (.json)"
 ]);
 
 /**
@@ -108,7 +109,7 @@ const processFile = async (file: File) => {
       selectedFile.value = null;
 
           if (result?.success) {
-      emit('import-success', result);
+      emit('import-success', result, fileContent, file.name);
     } else {
       const errorMsg = result?.message || 'Failed to process file. Please check the file format and try again.';
       emit('import-error', errorMsg);
@@ -205,24 +206,24 @@ const onUploadAreaClick = () => {
         </div>
         
         <div class="upload-text">
-          <h3 class="text-xl font-semibold text-surface-900 dark:text-surface-0 mb-2">
+          <h3 class="text-3xl font-bold text-white mb-4">
             Import Your API Documentation
           </h3>
-          <p class="text-surface-800 dark:text-surface-200 mb-4 font-medium">
+          <p class="text-xl text-white mb-6 font-medium">
             Drag and drop your file here, or click to browse
           </p>
           
           <div class="supported-formats mb-6">
             <div class="flex items-center gap-2 mb-3">
               <i class="fas fa-file-code text-primary-600"></i>
-              <p class="text-sm font-bold text-white">
+              <p class="text-lg font-bold text-white">
                 Supported formats:
               </p>
             </div>
             <div class="format-list">
               <div v-for="format in supportedFormats" :key="format" class="format-item">
-                <i class="fas fa-check text-success-600"></i>
-                <span>{{ format }}</span>
+                <i class="fas fa-check text-primary-600"></i>
+                <span class="text-base font-medium">{{ format }}</span>
               </div>
             </div>
           </div>
@@ -257,7 +258,7 @@ const onUploadAreaClick = () => {
     <!-- File Size Limit Notice -->
     <Message 
       severity="info" 
-      class="mt-4"
+      class="mt-6"
       icon="fas fa-info-circle"
     >
       <div class="text-sm text-surface-800 dark:text-surface-200">
@@ -270,93 +271,165 @@ const onUploadAreaClick = () => {
 
 <style scoped>
 .file-upload-container {
-  @apply w-full;
+  width: 100%;
 }
 
 .upload-area {
-  @apply relative w-full min-h-96 border-2 border-dashed border-surface-300 dark:border-surface-600 
-         rounded-lg transition-all duration-200 ease-in-out cursor-pointer
-         bg-surface-50 dark:bg-surface-800 hover:bg-surface-100 dark:hover:bg-surface-700;
+  position: relative;
+  width: 100%;
+  min-height: 28rem;
+  border: 2px dashed var(--c-border-default);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  background: var(--c-bg-default);
+  aspect-ratio: 5/3;
+}
+
+.upload-area:hover {
+  background: var(--c-bg-subtle);
+  border-color: var(--c-border-hover);
 }
 
 .upload-area.drag-over {
-  @apply border-primary-400 bg-primary-50 dark:bg-primary-900/20 
-         shadow-lg scale-[1.02] border-solid;
+  border: 2px solid var(--c-accent-primary);
+  background: var(--c-bg-accent-subtle);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transform: scale(1.02);
 }
 
 .upload-area.uploading {
-  @apply border-solid border-primary-500 bg-primary-50 dark:bg-primary-900/20;
+  border: 2px solid var(--c-accent-primary);
+  background: var(--c-bg-accent-subtle);
 }
 
 .upload-content {
-  @apply flex flex-col items-center justify-center h-full p-8 text-center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
 }
 
 .upload-icon {
-  @apply mb-6 opacity-70;
+  margin-bottom: 1.5rem;
+  opacity: 0.9;
 }
 
 .upload-text {
-  @apply max-w-md;
+  max-width: 50rem;
+  width: 100%;
 }
 
 .supported-formats {
-  @apply text-left;
+  text-align: left;
 }
 
 .format-list {
-  @apply grid grid-cols-1 gap-2;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .format-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .upload-area {
+    min-height: 24rem;
+  }
+  
+  .upload-content {
+    padding: 1.5rem;
+  }
+  
+  .upload-text h3 {
+    font-size: 1.75rem;
+  }
+  
+  .upload-text p {
+    font-size: 1.125rem;
+  }
 }
 
 .format-item {
-  @apply flex items-center gap-2 text-sm text-surface-800 dark:text-surface-200 
-         px-3 py-2 rounded-md bg-surface-100 dark:bg-surface-800 
-         border border-surface-200 dark:border-surface-700 transition-colors;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--c-bg-subtle);
+  border: 1px solid var(--c-border-default);
+  transition: all 0.2s ease;
 }
 
 .format-item:hover {
-  @apply bg-surface-200 dark:bg-surface-700;
+  background: var(--c-bg-hover);
+  border-color: var(--c-border-hover);
+  transform: translateY(-1px);
 }
 
 .upload-progress {
-  @apply flex items-center justify-center h-full p-8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 1.5rem;
 }
 
 .progress-content {
-  @apply text-center max-w-md;
+  text-align: center;
+  max-width: 32rem;
+  color: var(--c-text-primary);
 }
 
 .upload-button {
-  @apply inline-block;
+  display: inline-block;
 }
 
-/* Custom FileUpload styling using Caido brand colors */
+/* Custom FileUpload styling - beautiful white button */
 :deep(.p-fileupload-choose) {
-  background-color: hsl(var(--c-primary-600));
-  border-color: hsl(var(--c-primary-600));
-  color: white;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border-radius: 0.5rem;
+  background-color: white;
+  border: 2px solid white;
+  color: #374151;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 0.75rem;
   transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 :deep(.p-fileupload-choose:hover) {
-  background-color: hsl(var(--c-primary-700));
-  border-color: hsl(var(--c-primary-700));
+  background-color: #f9fafb;
+  border-color: #f9fafb;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
-/* Caido brand color utilities */
-.text-primary-600 {
-  color: hsl(var(--c-primary-600));
+:deep(.p-fileupload-choose:active) {
+  transform: translateY(0);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.text-primary-700 {
-  color: hsl(var(--c-primary-700));
+/* Caido theme color utilities */
+.text-primary {
+  color: var(--c-text-primary);
 }
 
-.text-success-600 {
-  color: hsl(var(--c-success-600));
+.text-secondary {
+  color: var(--c-text-secondary);
+}
+
+.text-accent {
+  color: var(--c-accent-primary);
 }
 </style>
+

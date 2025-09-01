@@ -88,7 +88,7 @@ export async function parseOpenAPISpec(
     };
 
     // Extract requests from paths
-    spec.requests = await extractOpenAPIRequests(sdk, data.paths || {}, baseUrl);
+    spec.requests = await extractOpenAPIRequests(sdk, data.paths || {}, baseUrl, data);
 
         return spec;
   } catch (error: any) {
@@ -101,12 +101,14 @@ export async function parseOpenAPISpec(
  * @param sdk - Caido SDK instance
  * @param paths - OpenAPI paths object
  * @param baseUrl - Base URL for the API
+ * @param spec - Full OpenAPI specification for schema resolution
  * @returns Array of parsed requests
  */
 async function extractOpenAPIRequests(
   sdk: SDK,
   paths: Record<string, any>,
-  baseUrl: string
+  baseUrl: string,
+  spec: any
 ): Promise<OpenAPIRequest[]> {
   const requests: OpenAPIRequest[] = [];
   const httpMethods = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'];
@@ -115,7 +117,7 @@ async function extractOpenAPIRequests(
     for (const method of httpMethods) {
       if (pathItem[method]) {
         const operation = pathItem[method];
-        const request = await parseOpenAPIOperation(sdk, method, path, operation, baseUrl);
+        const request = await parseOpenAPIOperation(sdk, method, path, operation, baseUrl, spec);
         if (request) {
           requests.push(request);
         }
@@ -124,6 +126,144 @@ async function extractOpenAPIRequests(
   }
 
   return requests;
+}
+
+/**
+ * Resolves a schema reference ($ref) to the actual schema object
+ * @param ref - The $ref string (e.g., "#/components/schemas/User")
+ * @param spec - The full OpenAPI specification
+ * @param visited - Set to track circular references
+ * @returns Resolved schema object
+ */
+function resolveSchemaRef(ref: string, spec: any, visited: Set<string> = new Set()): any {
+  if (visited.has(ref)) {
+    // Circular reference detected, return a placeholder
+    return { type: 'object', description: `Circular reference to ${ref}` };
+  }
+
+  visited.add(ref);
+
+  if (!ref.startsWith('#/')) {
+    return null;
+  }
+
+  const path = ref.substring(2).split('/');
+  let current = spec;
+
+  for (const segment of path) {
+    if (!current || typeof current !== 'object' || !(segment in current)) {
+      return null;
+    }
+    current = current[segment];
+  }
+
+  // If the resolved schema has a $ref, resolve it recursively
+  if (current && typeof current === 'object' && current.$ref) {
+    return resolveSchemaRef(current.$ref, spec, visited);
+  }
+
+  return current;
+}
+
+/**
+ * Generates an example value from a schema
+ * @param schema - The schema object (can contain $ref)
+ * @param spec - The full OpenAPI specification for resolving refs
+ * @param visited - Set to track circular references
+ * @returns Generated example value
+ */
+function generateExampleFromSchema(schema: any, spec: any, visited: Set<string> = new Set()): any {
+  if (!schema || typeof schema !== 'object') {
+    return null;
+  }
+
+  // If schema has a $ref, resolve it first
+  if (schema.$ref) {
+    if (visited.has(schema.$ref)) {
+      return null; // Avoid circular references
+    }
+    const resolvedSchema = resolveSchemaRef(schema.$ref, spec, new Set(visited));
+    if (resolvedSchema) {
+      visited.add(schema.$ref);
+      return generateExampleFromSchema(resolvedSchema, spec, visited);
+    }
+    return null;
+  }
+
+  // Use explicit example if provided
+  if (schema.example !== undefined) {
+    return schema.example;
+  }
+
+  // Generate based on type
+  switch (schema.type) {
+    case 'string':
+      if (schema.enum && schema.enum.length > 0) {
+        return schema.enum[0];
+      }
+      if (schema.format === 'email') {
+        return 'user@example.com';
+      }
+      if (schema.format === 'date') {
+        return '2024-01-01';
+      }
+      if (schema.format === 'date-time') {
+        return '2024-01-01T00:00:00Z';
+      }
+      if (schema.format === 'uuid') {
+        return '550e8400-e29b-41d4-a716-446655440000';
+      }
+      return schema.pattern ? 'example' : 'string';
+
+    case 'number':
+    case 'integer':
+      if (schema.enum && schema.enum.length > 0) {
+        return schema.enum[0];
+      }
+      return schema.minimum !== undefined ? schema.minimum : 0;
+
+    case 'boolean':
+      return true;
+
+    case 'array':
+      if (schema.items) {
+        const itemExample = generateExampleFromSchema(schema.items, spec, visited);
+        return itemExample !== null ? [itemExample] : [];
+      }
+      return [];
+
+    case 'object':
+      const obj: any = {};
+      
+      if (schema.properties) {
+        for (const [propName, propSchema] of Object.entries(schema.properties)) {
+          const propExample = generateExampleFromSchema(propSchema, spec, visited);
+          if (propExample !== null) {
+            obj[propName] = propExample;
+          }
+        }
+      }
+      
+      // Ensure required properties are present
+      if (schema.required && Array.isArray(schema.required)) {
+        for (const requiredProp of schema.required) {
+          if (!(requiredProp in obj) && schema.properties && schema.properties[requiredProp]) {
+            const propExample = generateExampleFromSchema(schema.properties[requiredProp], spec, visited);
+            if (propExample !== null) {
+              obj[requiredProp] = propExample;
+            } else {
+              // Fallback for required properties
+              obj[requiredProp] = 'required_value';
+            }
+          }
+        }
+      }
+      
+      return Object.keys(obj).length > 0 ? obj : null;
+
+    default:
+      return null;
+  }
 }
 
 /**
@@ -140,7 +280,8 @@ async function parseOpenAPIOperation(
   method: string,
   path: string,
   operation: any,
-  baseUrl: string
+  baseUrl: string,
+  spec: any
 ): Promise<OpenAPIRequest | null> {
   try {
     const upperMethod = method.toUpperCase();
@@ -197,7 +338,20 @@ async function parseOpenAPIOperation(
           }
         }
 
-        if (contentType) {
+        if (contentType && bodySchema) {
+          // Generate example from schema if no explicit example exists
+          if (!bodyExample && contentType === 'application/json') {
+            try {
+              const generatedExample = generateExampleFromSchema(bodySchema, spec);
+              if (generatedExample !== null) {
+                bodyExample = generatedExample;
+              }
+            } catch (error) {
+              // If schema resolution fails, continue without example
+              sdk.console.warn(`Failed to generate example from schema: ${error}`);
+            }
+          }
+
           request.body = {
             contentType,
             schema: bodySchema,

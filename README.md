@@ -28,9 +28,9 @@ Transform your API docs into actionable security tests - because great security 
 <summary><b>Smart Import Engine</b></summary>
 <br>
 
-- **Drag & Drop Import:** One-click import for Postman Collections and OpenAPI specs
+- **Drag & Drop Import:** One-click import for Postman Collections, OpenAPI specs, and Postman Environment files
 - **Auto-Detection:** Intelligent file format recognition with confidence scoring
-- **Format Support:** Postman Collection v2.1 and OpenAPI 3.x specifications (JSON only)
+- **Format Support:** Postman Collection v2.1, OpenAPI 3.x specifications, and Postman Environment files (JSON only)
 - **Error Handling:** Comprehensive validation with detailed error messages
 </details>
 
@@ -45,6 +45,18 @@ Transform your API docs into actionable security tests - because great security 
 - **API Key:** Custom headers like X-API-Key, Authorization
 - **Custom Headers:** Any custom authentication scheme support
 - **Hostname Override:** Configure custom hostnames for different environments
+</details>
+
+<details>
+<summary><b>Environment Variables</b></summary>
+<br>
+
+- **Environment Import:** Import Postman Environment files with all variables and secrets
+- **Auto-Detection:** Automatically detect sensitive variables (tokens, keys, passwords) and mark as secrets
+- **Variable Management:** Create new Caido environments with imported variables ready for use
+- **Collision Handling:** Smart naming prevents overwrites (Dev, Dev-1, Dev-2, etc.)
+- **Secret Detection:** Intelligent detection of sensitive data based on variable names and patterns
+- **Bulk Import:** Import multiple environment files without conflicts
 </details>
 
 <details>
@@ -92,6 +104,7 @@ Transform your API docs into actionable security tests - because great security 
 1. **Prepare Your File:**
    - Export your API collection from Postman as JSON
    - Save your OpenAPI specification as JSON format
+   - Export Postman Environment files as JSON for variable import
    - Ensure file size is under 10MB for optimal performance
 
 2. **Import to ReDocs:**
@@ -106,10 +119,17 @@ Transform your API docs into actionable security tests - because great security 
    - Skip this step if authentication isn't required
    - Smart header replacement prevents authentication conflicts
 
-4. **Start Testing:**
+4. **Import Environment Variables (Optional):**
+   - Import Postman Environment files to set up API variables
+   - ReDocs automatically creates new Caido environments with collision-safe naming
+   - Sensitive variables (tokens, keys) are automatically marked as secrets
+   - Use imported variables in your replay sessions for dynamic testing
+
+5. **Start Testing:**
    - Navigate to the **Replay** section in Caido
    - Find your imported sessions organized in dedicated collections
    - Each API endpoint becomes a separate replay session ready for security testing
+   - Use your imported environment variables in replay sessions
 
 ## Documentation
 

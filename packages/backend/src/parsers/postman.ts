@@ -50,8 +50,6 @@ export async function parsePostmanCollection(
       throw new Error("Invalid Postman collection: missing info.name");
     }
 
-
-
     const collection: PostmanCollection = {
       name: data.info.name,
       description: data.info.description,

@@ -116,7 +116,8 @@ components:
                       1. Prepare Your File
                     </h4>
                     <p class="text-surface-800 dark:text-surface-0 mb-3">
-                      Export your API collection from Postman or save your OpenAPI specification as a JSON file.
+                      Export your API collection from Postman, save your OpenAPI specification as a JSON file, 
+                      or export Postman Environment files to set up variables.
                     </p>
                   </div>
 
@@ -160,7 +161,7 @@ components:
                 </div>
               </template>
               <template #content>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div class="format-card">
                     <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
                       Postman Collections
@@ -182,6 +183,18 @@ components:
                       <li>• Swagger 2.0 (.json only)</li>
                       <li>• Example values generation</li>
                       <li>• Security schemes detection</li>
+                    </ul>
+                  </div>
+
+                  <div class="format-card">
+                    <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      Postman Environments
+                    </h5>
+                    <ul class="text-sm text-surface-800 dark:text-surface-0 space-y-1">
+                      <li>• Environment files (.json)</li>
+                      <li>• Variable auto-detection</li>
+                      <li>• Secret detection (tokens, keys)</li>
+                      <li>• Collision-safe naming</li>
                     </ul>
                   </div>
                 </div>
@@ -298,6 +311,170 @@ components:
           </div>
         </TabPanel>
 
+        <!-- Environment Variables Tab -->
+        <TabPanel header="Environment Variables">
+          <div class="space-y-6">
+            <Card>
+              <template #title>
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-cogs text-primary-500"></i>
+                  Environment Variables Import
+                </div>
+              </template>
+              <template #content>
+                <div class="space-y-4">
+                  <div class="step">
+                    <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      What are Environment Variables?
+                    </h4>
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
+                      Environment variables store values like API endpoints, tokens, and configuration data that can be reused 
+                      across multiple requests. ReDocs can import Postman Environment files and create corresponding Caido environments.
+                    </p>
+                  </div>
+
+                  <div class="step">
+                    <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      Supported Variable Types
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                      <div class="format-card">
+                        <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2 flex items-center gap-2">
+                          <i class="fas fa-text-width text-primary-400"></i>
+                          Plain Text Variables
+                        </h5>
+                        <ul class="text-sm text-surface-800 dark:text-surface-0 space-y-1">
+                          <li>• API endpoints (baseUrl, apiUrl)</li>
+                          <li>• User IDs and identifiers</li>
+                          <li>• Configuration values</li>
+                          <li>• Non-sensitive data</li>
+                        </ul>
+                      </div>
+
+                      <div class="format-card">
+                        <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2 flex items-center gap-2">
+                          <i class="fas fa-lock text-primary-400"></i>
+                          Secret Variables
+                        </h5>
+                        <ul class="text-sm text-surface-800 dark:text-surface-0 space-y-1">
+                          <li>• API tokens and keys</li>
+                          <li>• Access tokens and refresh tokens</li>
+                          <li>• Passwords and credentials</li>
+                          <li>• Client secrets</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="step">
+                    <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      Auto-Detection Features
+                    </h4>
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
+                      ReDocs automatically detects sensitive variables based on their names and marks them as secrets:
+                    </p>
+                    <div class="bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg p-4">
+                      <p class="text-sm text-surface-800 dark:text-surface-0 font-mono">
+                        <strong>Detected as secrets:</strong> token, key, secret, password, auth, bearer, api_key, 
+                        access_token, refresh_token, client_secret, private_key
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </Card>
+
+            <Card>
+              <template #title>
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-upload text-primary-500"></i>
+                  Import Process
+                </div>
+              </template>
+              <template #content>
+                <div class="space-y-4">
+                  <div class="step">
+                    <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      1. Export from Postman
+                    </h4>
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
+                      In Postman, go to your Environment → Click the three dots → Export → Save as JSON file.
+                    </p>
+                  </div>
+
+                  <div class="step">
+                    <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      2. Import to ReDocs
+                    </h4>
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
+                      Drag and drop your environment JSON file or click "Choose File" to upload it.
+                    </p>
+                  </div>
+
+                  <div class="step">
+                    <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      3. Review Variables
+                    </h4>
+                    <p class="text-surface-800 dark:text-surface-0 mb-3">
+                      Select which variables to import, edit their values if needed, and choose between plain text or secret types.
+                    </p>
+                  </div>
+
+                  <div class="step">
+                    <h4 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      4. Environment Created
+                    </h4>
+                    <p class="text-surface-800 dark:text-surface-0">
+                      ReDocs creates a new Caido environment with collision-safe naming ([ReDocs]-Dev, [ReDocs]-Dev-1, etc.).
+                    </p>
+                  </div>
+                </div>
+              </template>
+            </Card>
+
+            <Card>
+              <template #title>
+                <div class="flex items-center gap-2">
+                  <i class="fas fa-code text-primary-500"></i>
+                  Environment File Example
+                </div>
+              </template>
+              <template #content>
+                <p class="text-surface-800 dark:text-surface-0 mb-4">
+                  Basic structure of a Postman Environment file that ReDocs can import:
+                </p>
+                <div class="example-code bg-surface-100 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 rounded-lg p-4 text-sm overflow-x-auto">
+                  <pre><code class="language-json text-surface-900 dark:text-surface-0 font-mono leading-relaxed">{
+  "name": "Development",
+  "values": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.example.com",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "api_token",
+      "value": "your-secret-token-here",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "12345",
+      "type": "default",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2024-01-01T00:00:00.000Z"
+}</code></pre>
+                </div>
+              </template>
+            </Card>
+          </div>
+        </TabPanel>
+
         <!-- Troubleshooting Tab -->
         <TabPanel header="Troubleshooting">
           <div class="space-y-6">
@@ -347,6 +524,36 @@ components:
                     <p class="text-surface-800 dark:text-surface-0 text-sm">
                       Verify that your authentication credentials are correct and haven't expired.
                       Some APIs may require additional headers or specific token formats.
+                    </p>
+                  </div>
+
+                  <div class="faq-item">
+                    <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      Environment variables not importing
+                    </h5>
+                    <p class="text-surface-800 dark:text-surface-0 text-sm">
+                      Ensure your environment file is a valid Postman export with the correct JSON structure.
+                      Check that it contains the required fields: name, values array, and Postman metadata.
+                    </p>
+                  </div>
+
+                  <div class="faq-item">
+                    <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      Environment name conflicts
+                    </h5>
+                    <p class="text-surface-800 dark:text-surface-0 text-sm">
+                      ReDocs automatically handles naming conflicts by adding numbers ([ReDocs]-Dev-1, [ReDocs]-Dev-2).
+                      Each import creates a separate environment to prevent overwrites.
+                    </p>
+                  </div>
+
+                  <div class="faq-item">
+                    <h5 class="font-semibold text-surface-900 dark:text-surface-0 mb-2">
+                      Variables not appearing in Caido
+                    </h5>
+                    <p class="text-surface-800 dark:text-surface-0 text-sm">
+                      Check the Environment section in Caido to find your imported variables.
+                      Ensure you select the correct environment when using variables in replay sessions.
                     </p>
                   </div>
                 </div>

@@ -1,16 +1,12 @@
 import type { DefineAPI, SDK } from "caido:plugin";
 import { parsePostmanCollection, detectPostmanAuth } from "./parsers/postman.js";
 import { parseOpenAPISpec, detectOpenAPIAuth } from "./parsers/openapi.js";
+import { parsePostmanEnvironment } from "./parsers/environment.js";
 import { detectFileType, validateFileTypeSupport } from "./utils/fileDetection.js";
 import { createReplaySessions, type AuthConfig } from "./replay/sessionCreator.js";
+import { createCaidoEnvironment, validateEnvironmentCreation, convertToCaidoVariables } from "./utils/environmentCreation.js";
 
-/**
- * Processes an imported file (auto-detects Postman collection or OpenAPI spec)
- * @param sdk - Caido SDK instance
- * @param fileContent - Raw file content as string
- * @param fileName - Original file name
- * @returns Promise with import results
- */
+
 const processImportFile = async (
   sdk: SDK,
   fileContent: string,
@@ -21,6 +17,7 @@ const processImportFile = async (
 
     // Validate that we can process this file type
     const validation = validateFileTypeSupport(detectionResult.type, fileName);
+    
     if (!validation.supported) {
       return {
         success: false,
@@ -35,7 +32,6 @@ const processImportFile = async (
     let authInfo: any = {};
 
     if (detectionResult.type === 'postman') {
-      // Parse Postman collection
       const collection = await parsePostmanCollection(sdk, fileContent);
       authInfo = detectPostmanAuth(collection);
       
@@ -51,10 +47,7 @@ const processImportFile = async (
       };
 
     } else if (detectionResult.type === 'openapi') {
-      // Determine if file is YAML based on extension
       const isYaml = fileName.toLowerCase().endsWith('.yaml') || fileName.toLowerCase().endsWith('.yml');
-      
-      // Parse OpenAPI specification
       const spec = await parseOpenAPISpec(sdk, fileContent, isYaml);
       authInfo = detectOpenAPIAuth(spec);
       
@@ -69,6 +62,19 @@ const processImportFile = async (
         requests: spec.requests,
         authentication: authInfo,
         message: `Successfully parsed OpenAPI specification "${spec.name}" with ${spec.requests.length} requests`
+      };
+
+    } else if (detectionResult.type === 'environment') {
+      const environment = await parsePostmanEnvironment(sdk, fileContent);
+      
+      result = {
+        success: true,
+        type: 'environment',
+        environmentName: environment.name,
+        description: environment.description,
+        variables: environment.variables,
+        variableCount: environment.variables.length,
+        message: `Successfully parsed Postman environment "${environment.name}" with ${environment.variables.length} variables`
       };
 
     } else {
@@ -86,14 +92,7 @@ const processImportFile = async (
   }
 };
 
-/**
- * Creates replay sessions from parsed requests with authentication
- * @param sdk - Caido SDK instance
- * @param requests - Array of parsed requests
- * @param collectionName - Name for the collection
- * @param authConfig - Authentication configuration
- * @returns Promise with creation results
- */
+
 const createSessionsFromRequests = async (
   sdk: SDK,
   requests: any[],
@@ -101,11 +100,7 @@ const createSessionsFromRequests = async (
   authConfig: AuthConfig
 ) => {
   try {
-
-    
     const result = await createReplaySessions(sdk, requests, collectionName, authConfig);
-    
-
     return result;
   } catch (error: any) {
     return {
@@ -117,32 +112,71 @@ const createSessionsFromRequests = async (
   }
 };
 
+
+
 /**
- * Legacy function for demonstration
- * @param sdk - Caido SDK instance  
- * @param length - Length of random string to generate
- * @returns Random string
+ * Create environment variables in Caido from selected variables
+ * @param sdk - Caido SDK instance
+ * @param variables - Array of selected environment variables
+ * @param originalEnvironmentName - Original environment name from Postman
+ * @returns Environment creation result
  */
-const generateRandomString = (sdk: SDK, length: number) => {
-  const randomString = Math.random()
-    .toString(36)
-    .substring(2, length + 2);
-  return randomString;
+const createEnvironmentVariables = async (
+  sdk: SDK,
+  variables: Array<{
+    key: string;
+    value: string;
+    enabled: boolean;
+    isSecret: boolean;
+  }>,
+  originalEnvironmentName: string
+) => {
+  try {
+    // Validate input
+    const convertedVariables = convertToCaidoVariables(variables);
+    
+    const validation = validateEnvironmentCreation(
+      convertedVariables,
+      originalEnvironmentName
+    );
+    
+    if (!validation.valid) {
+      return {
+        success: false,
+        error: validation.error,
+        message: `Validation failed: ${validation.error}`
+      };
+    }
+
+
+    
+    // Create environment in Caido
+    const result = await createCaidoEnvironment(sdk, convertedVariables, originalEnvironmentName);
+    
+    return result;
+
+  } catch (error: any) {
+    const errorMessage = `Failed to create environment: ${error.message || error}`;
+
+    
+    return {
+      success: false,
+      environmentName: `[ReDocs] - ${originalEnvironmentName}`,
+      variablesCreated: 0,
+      message: errorMessage,
+      error: errorMessage
+    };
+  }
 };
 
 export type API = DefineAPI<{
   processImportFile: typeof processImportFile;
   createSessionsFromRequests: typeof createSessionsFromRequests;
-  generateRandomString: typeof generateRandomString;
+  createEnvironmentVariables: typeof createEnvironmentVariables;
 }>;
 
 export function init(sdk: SDK<API>) {
-  // Register the main import processing function
   sdk.api.register("processImportFile", processImportFile);
-  
-  // Register the replay session creation function
   sdk.api.register("createSessionsFromRequests", createSessionsFromRequests);
-  
-  
-
+  sdk.api.register("createEnvironmentVariables", createEnvironmentVariables);
 }

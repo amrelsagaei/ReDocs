@@ -184,13 +184,38 @@ async function buildRequestSpec(request: PostmanRequest | OpenAPIRequest, hostna
     let finalBody = '';
     if ('body' in request && request.body) {
       if ('raw' in request.body && request.body.raw) {
+        // Postman-style raw body
         finalBody = request.body.raw;
       } else if ('formdata' in request.body && request.body.formdata) {
+        // Postman-style form data
         const formPairs = request.body.formdata.map(item => 
           `${encodeURIComponent(item.key)}=${encodeURIComponent(item.value || '')}`
         );
         finalBody = formPairs.join('&');
         finalHeaders['Content-Type'] = 'application/x-www-form-urlencoded';
+      } else if ('example' in request.body && request.body.example) {
+        // OpenAPI-style body with generated example
+        if (request.body.contentType === 'application/json') {
+          finalBody = JSON.stringify(request.body.example, null, 2);
+        } else if (request.body.contentType === 'application/x-www-form-urlencoded') {
+          // Convert object to form data
+          if (typeof request.body.example === 'object' && request.body.example !== null) {
+            const formPairs = Object.entries(request.body.example).map(([key, value]) => 
+              `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`
+            );
+            finalBody = formPairs.join('&');
+          }
+        } else {
+          // For other content types, try to stringify
+          finalBody = typeof request.body.example === 'string' 
+            ? request.body.example 
+            : JSON.stringify(request.body.example);
+        }
+        
+        // Ensure Content-Type header is set
+        if (request.body.contentType) {
+          finalHeaders['Content-Type'] = request.body.contentType;
+        }
       }
     }
     
